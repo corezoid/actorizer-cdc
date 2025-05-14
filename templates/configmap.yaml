@@ -1,0 +1,10 @@
+{{- $cfg := .Values.global.actorizer_cdc.config }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "actorizer_cdc.fullname" . }}-configmap
+  labels:
+    {{- include "actorizer_cdc.labels" . | nindent 4 }}
+data:
+  {{ .Values.global.actorizer_cdc.config_file }}: |
+{{ $cfg | mustToPrettyJson | trim | indent 4 }}

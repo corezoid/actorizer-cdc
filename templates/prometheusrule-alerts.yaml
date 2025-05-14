@@ -1,0 +1,19 @@
+{{- with .Values.global.alerts }}
+{{- if .enabled }}
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: actorizercdc-alerts
+  namespace: {{ .namespace | default $.Release.Namespace | quote }}
+  {{- with .annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  labels:
+    {{- with .labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+    {{- $.Files.Get "mixins/alerts.yaml" | nindent 2 }}
+{{- end }}
+{{- end }}

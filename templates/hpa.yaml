@@ -1,0 +1,32 @@
+{{- if .Values.global.actorizer_cdc.autoscaling.enabled }}
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: {{ include "actorizer_cdc.fullname" . }}
+  labels:
+    {{- include "actorizer_cdc.labels" . | nindent 4 }}
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: {{ include "actorizer_cdc.fullname" . }}
+  minReplicas: {{ .Values.global.actorizer_cdc.autoscaling.minReplicas }}
+  maxReplicas: {{ .Values.global.actorizer_cdc.autoscaling.maxReplicas }}
+  metrics:
+    {{- if .Values.global.actorizer_cdc.autoscaling.targetCPUUtilizationPercentage }}
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: {{ .Values.global.actorizer_cdc.autoscaling.targetCPUUtilizationPercentage }}
+    {{- end }}
+    {{- if .Values.global.actorizer_cdc.autoscaling.targetMemoryUtilizationPercentage }}
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: {{ .Values.global.actorizer_cdc.autoscaling.targetMemoryUtilizationPercentage }}
+    {{- end }}
+{{- end }}

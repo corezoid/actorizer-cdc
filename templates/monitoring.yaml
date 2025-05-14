@@ -1,0 +1,19 @@
+{{- if .Values.global.serviceMonitor -}}
+{{- if .Values.global.serviceMonitor.enabled -}}
+apiVersion: {{ include "common.ServiceMonitor.apiVersion" . }}
+kind: ServiceMonitor
+metadata:
+  name: {{ include "actorizer_cdc.fullname" . }}
+  labels:
+    {{- include "actorizer_cdc.labels" . | nindent 4 }}
+    {{- include "common.ServiceMonitor.metadata.labes" . | nindent 4 }}
+spec:
+  selector:
+    matchLabels:
+      {{- include "actorizer_cdc.labels" . | nindent 6 }}
+  endpoints:
+  - path: {{ .Values.prometheusPath | default "/metrics" }}
+    targetPort: {{ .Values.global.actorizer_cdc.service.port }}
+    interval: {{ .Values.prometheusInterval | default "15s" }}
+{{- end -}}
+{{- end -}}

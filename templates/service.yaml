@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "actorizer_cdc.fullname" . }}
+  labels:
+    {{- include "actorizer_cdc.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.global.actorizer_cdc.service.type }}
+  ports:
+    - port: {{ .Values.global.actorizer_cdc.service.port }}
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    {{- include "actorizer_cdc.selectorLabels" . | nindent 4 }}

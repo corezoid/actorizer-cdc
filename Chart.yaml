@@ -1,0 +1,16 @@
+apiVersion: v2
+name: actorizer-cdc
+version: 0.0.2
+description: The Actorizer-CDC application
+type: application
+keywords:
+  - actorizer-cdc
+home: https://simulator.company
+
+maintainers:
+  - name: Andrey Vinokurov
+    email: andrey.vinokurov@corezoid.com
+
+icon: "https://media-exp1.licdn.com/dms/image/C4E0BAQG_mUmw1UsyuA/company-logo_200_200/0/1525514455224?e=2147483647&v=beta&t=Bmmfd3W25bG64i0R7wY7ZeuMRw7-Y6Xsh94N4nvpWFk"
+
+appVersion: 0.0.11
