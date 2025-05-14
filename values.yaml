@@ -1,0 +1,259 @@
+# Default values for actorizer_cdc.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+global:
+  serviceMonitor:
+    enabled: false
+  alerts:
+    enabled: false
+  # repotype: "public" or "helm"
+  repotype: "public"
+  actorizer_cdc:
+    replicaCount: 1
+
+    image:
+      repository: hub.corezoid.com/public/actorizer_cdc
+      pullPolicy: IfNotPresent
+      # Overrides the image tag whose default is the chart appVersion.
+      # tag: ""
+    config_file: "config.yaml"
+    config:
+      mode: test
+      version: 1
+      actorizer: https://gaid.simulator.company
+      algorithm: EdDSA # support: EdDSA & ES256
+      stopped: false
+      srv:
+        host: 'localhost'
+        port: '8080'
+      account:
+        url: ACCOUNT_DOMAIN
+        client_id: CLIENT_ID
+        secret: SECRET
+      connection:
+        type: postgresql # only postgresql
+        uri: postgres://DB_USER_ACTORIZER:DB_PASSWORD_ACTORIZER@DB_HOST_ACTORIZER:5432/actorizer?pool_min_conns=2&pool_max_conns=20&pool_max_conn_lifetime=5m&pool_max_conn_idle_time=1m&pool_health_check_period=100ms&pool_max_conn_lifetime_jitter=50ms
+      dbs:
+        - id: # id or name
+          name: simulator # priority over id
+          connection:
+            type: postgresql # only postgresql
+            uri: postgres://DB_USER_SIMUALTOR:DB_PASSWORD_SIMUALTOR@DB_HOST_SIMUALTOR:5432/DB_NAME_SIMUALTOR?sslmode=disable
+            plugin: wal2json
+          replication:
+            logic:
+              enable: true
+              slot: sim_prod
+              workers: 5
+            history:
+              enable: false
+              cycle: false
+              threads: 5
+          entities:
+            - id: 0 # id or name
+              name: currency # priority over id
+              schema: public # almost public
+              table: account_currencies
+              order:
+                - id
+              sep: "" # separate for create entity
+              entity:
+                - id
+              data: [] # create extra json
+            - name: formula
+              schema: public
+              table: account_formulas
+              order:
+                - id
+              entity:
+                - id
+            - name: account_name
+              schema: public
+              table: account_names
+              order:
+                - created_at #not index
+                - id #not integer
+              entity:
+                - id
+            - name: account
+              schema: public
+              table: actors_accounts
+              order:
+                - created_at #not index
+                - id #not integer
+              entity:
+                - id
+            - name: workspace
+              schema: public
+              table: accounts
+              order:
+                - created_at #not index
+                - id #not integer
+              entity:
+                - id
+            - name: actor
+              schema: public
+              table: actors
+              order:
+                - created_at #not index
+                - id #not integer
+              entity:
+                - id
+            - name: edge
+              schema: public
+              table: actors_edges
+              order:
+                - created_at #not index
+                - id #not integer
+              entity:
+                - id
+            - name: attachment
+              schema: public
+              table: attachments
+              order:
+                - created_at #not index
+                - id #not integer
+              entity:
+                - id
+            - name: form
+              schema: public
+              table: forms
+              order:
+                - id
+              entity:
+                - id
+            - name: transaction
+              schema: public
+              table: transactions_[0-9]{6}
+              order:
+                - id
+                - created_at
+              entity:
+                - id
+            - name: form_accounts_transactions
+              schema: public
+              table: history_default
+              order:
+                - id
+                - created_at
+              entity:
+                - id
+            - name: form_accounts_transactions
+              schema: public
+              table: history_[0-9]{6}
+              order:
+                - id
+                - created_at
+              entity:
+                - id
+            - name: transfer
+              schema: public
+              table: transfers_default
+              order:
+                - created_at #not index
+                - id #not integer
+              entity:
+                - id
+            - name: transfer
+              schema: public
+              table: transfers_[0-9]{6}
+              order:
+                - created_at #not index
+                - id #not integer
+              entity:
+                - id
+    imagePullSecrets: []
+    nameOverride: ""
+    fullnameOverride: ""
+
+    serviceAccount:
+      # Specifies whether a service account should be created
+      create: false
+      # Automatically mount a ServiceAccount's API credentials?
+      automount: true
+      # Annotations to add to the service account
+      annotations: {}
+      # The name of the service account to use.
+      # If not set and create is true, a name is generated using the fullname template
+      name: ""
+
+    podAnnotations: {}
+    podLabels: {}
+
+    podSecurityContext: {}
+      # fsGroup: 2000
+
+    securityContext: {}
+      # capabilities:
+      #   drop:
+      #   - ALL
+      # readOnlyRootFilesystem: true
+      # runAsNonRoot: true
+      # runAsUser: 1000
+
+    service:
+      type: ClusterIP
+      port: 80
+
+    ingress:
+      enabled: false
+      className: ""
+      annotations: {}
+        # kubernetes.io/ingress.class: nginx
+        # kubernetes.io/tls-acme: "true"
+      hosts:
+        - host: gaid-cdc.example.local
+          paths:
+            - path: /
+              pathType: ImplementationSpecific
+      tls: []
+      #  - secretName: chart-example-tls
+      #    hosts:
+      #      - chart-example.local
+
+    resources: {}
+      # We usually recommend not to specify default resources and to leave this as a conscious
+      # choice for the user. This also increases chances charts run on environments with little
+      # resources, such as Minikube. If you do want to specify resources, uncomment the following
+      # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+      # limits:
+      #   cpu: 100m
+      #   memory: 128Mi
+      # requests:
+      #   cpu: 100m
+      #   memory: 128Mi
+
+    livenessProbe: {}
+      # httpGet:
+      #   path: /
+      #   port: http
+    readinessProbe: {}
+      # httpGet:
+      #   path: /
+      #   port: http
+
+    autoscaling:
+      enabled: false
+      minReplicas: 1
+      maxReplicas: 100
+      targetCPUUtilizationPercentage: 80
+      # targetMemoryUtilizationPercentage: 80
+
+    # Additional volumes on the output Deployment definition.
+    volumes: []
+    # - name: foo
+    #   secret:
+    #     secretName: mysecret
+    #     optional: false
+
+    # Additional volumeMounts on the output Deployment definition.
+    volumeMounts: []
+    # - name: foo
+    #   mountPath: "/etc/foo"
+    #   readOnly: true
+
+    nodeSelector: {}
+
+    tolerations: []
+
+    affinity: {}

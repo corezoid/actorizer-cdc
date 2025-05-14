@@ -1,0 +1,69 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "actorizer_cdc.fullname" . }}
+  labels:
+    {{- include "actorizer_cdc.labels" . | nindent 4 }}
+spec:
+  {{- if not .Values.global.actorizer_cdc.autoscaling.enabled }}
+  replicas: {{ .Values.global.actorizer_cdc.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "actorizer_cdc.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+      labels:
+        {{- include "actorizer_cdc.labels" . | nindent 8 }}
+        {{- with .Values.global.actorizer_cdc.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      {{- if not (eq .Values.global.repotype "public") }}
+      imagePullSecrets:
+        - name: {{ .Values.global.imagePullSecrets.name }}
+      {{- end }}
+      serviceAccountName: {{ include "actorizer_cdc.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.global.actorizer_cdc.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.global.actorizer_cdc.securityContext | nindent 12 }}
+          image: "{{ .Values.global.actorizer_cdc.image.repository }}:{{ .Values.global.actorizer_cdc.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.global.actorizer_cdc.image.pullPolicy }}
+          env:
+            - name: CONFIG_PATH
+              value: "/opt/config/{{ .Values.global.actorizer_cdc.config_file }}"
+          ports:
+            - name: http
+              containerPort: {{ .Values.global.actorizer_cdc.service.port }}
+              protocol: TCP
+          volumeMounts:
+            - name: config
+              mountPath: /opt/config/{{ .Values.global.actorizer_cdc.config_file }}
+              subPath: {{ .Values.global.actorizer_cdc.config_file }}
+          resources:
+            {{- toYaml .Values.global.actorizer_cdc.resources | nindent 12 }}
+          {{- with .Values.global.actorizer_cdc.volumeMounts }}
+          volumeMounts:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+      volumes:
+        - name: config
+          configMap:
+            name: {{ include "actorizer_cdc.fullname" . }}-configmap
+      {{- with .Values.global.actorizer_cdc.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.global.actorizer_cdc.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.global.actorizer_cdc.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

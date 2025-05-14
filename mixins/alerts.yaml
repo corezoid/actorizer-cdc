@@ -1,0 +1,25 @@
+groups:
+- name: actorizercdc
+  rules:
+  - alert: ActorizerCDCTooManyErrorsInMinute
+    expr: increase(actorizercdc_replication_errors_total[1m]) > 20
+    for: 1m
+    annotations:
+      summary: More than 20 errors in a minute for {{ $labels.system }}
+      description: |
+        ActorizerCDC in {{ $labels.namespace }} namespace has too many errors in 1 minute.
+      runbook_url: >-
+        https://bookstack.corezoid.com/books/actorization
+    labels:
+      severity: critical
+  - alert: ActorizerCDCTooManyErrorsInHour
+    expr: increase(actorizercdc_replication_errors_total[1h]) > 100
+    for: 1h
+    annotations:
+      summary: More than 100 errors in an hour for {{ $labels.system }}
+      description: |
+        ActorizerCDC in {{ $labels.namespace }} namespace has too many errors in 1 hour.
+      runbook_url: >-
+        https://bookstack.corezoid.com/books/actorization
+    labels:
+      severity: critical
