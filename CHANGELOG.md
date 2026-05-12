@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## Chart 0.0.3 [Actorizer-CDC 0.0.11] - 2025-05-28
+
+### Helm changes
+- Applications versions:
+  - actorizer-cdc - 0.0.11
+
+- Add ingress template.
+
 ## Chart 0.0.2 [Actorizer-CDC 0.0.11] - 2023-11-30
 
 ### Helm changes
